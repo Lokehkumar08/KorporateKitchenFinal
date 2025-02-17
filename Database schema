@@ -1,0 +1,343 @@
+-- Create Database
+CREATE DATABASE IF NOT EXISTS korporatekitchen11;
+USE korporatekitchen11;
+
+--------------------------------------------------
+-- Customers Table (user)
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS user (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    contact VARCHAR(15),
+    address TEXT,
+    image BLOB
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Admin Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS admin (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    contact VARCHAR(15),
+    image BLOB
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Delivery Agent Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS delivery_agent (
+    agent_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    contact VARCHAR(15),
+    image BLOB
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Restaurant Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS restaurant (
+    restaurant_id INT AUTO_INCREMENT PRIMARY KEY,
+    restaurant_name VARCHAR(100) NOT NULL,
+    user_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    contact VARCHAR(15),
+    address TEXT,
+    image BLOB,
+    open_hours TIME,
+    close_hours TIME
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Master Menu Items Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS master_menu_items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    restaurant_id INT,
+    item_name VARCHAR(100) NOT NULL,
+    item_description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    image BLOB,
+    item_type VARCHAR(50),
+    available_from TIME,
+    available_until TIME,
+    FOREIGN KEY (restaurant_id) REFERENCES restaurant(restaurant_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Orders Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    restaurant_id INT,
+    items TEXT,
+    quantity INT,
+    total_price DECIMAL(10,2),
+    order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    order_status ENUM('pending','accepted','rejected','completed','cancelled'),
+    FOREIGN KEY (user_id) REFERENCES user(user_id),
+    FOREIGN KEY (restaurant_id) REFERENCES restaurant(restaurant_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Payment Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS payment (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    payment_type VARCHAR(50),
+    payment_status ENUM('pending','completed','failed') DEFAULT 'pending',
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Bank Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS bank (
+    bank_id INT AUTO_INCREMENT PRIMARY KEY,
+    transaction_id INT,
+    total_price DECIMAL(10,2),
+    order_date DATETIME,
+    FOREIGN KEY (transaction_id) REFERENCES payment(transaction_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Delivery Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS delivery (
+    delivery_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    delivery_status ENUM('pending','delivered','failed') DEFAULT 'pending',
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Remarks Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS remarks (
+    remark_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    user_remark TEXT,
+    remark_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- User Favorites Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS user_favorites (
+    favorite_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    item_name VARCHAR(100) NOT NULL,
+    restaurant_name VARCHAR(100) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Cart Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS cart (
+    cart_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    item_name VARCHAR(100) NOT NULL,
+    item_price DECIMAL(10,2) NOT NULL,
+    total_price DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Order History Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS order_history (
+    history_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    user_id INT,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Notifications Table
+--------------------------------------------------
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    message TEXT,
+    time_stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+) ENGINE=InnoDB;
+
+--------------------------------------------------
+-- Insert Sample Data for Each Table
+--------------------------------------------------
+
+-- Insert Sample Data for user Table (8 rows)
+INSERT INTO user (user_name, email, password, contact, address, image) VALUES 
+('Alice', 'alice@example.com', 'alice123', '1234567890', '123 Apple St', NULL),
+('Bob', 'bob@example.com', 'bob123', '2345678901', '456 Banana Ave', NULL),
+('Charlie', 'charlie@example.com', 'charlie123', '3456789012', '789 Cherry Blvd', NULL),
+('Diana', 'diana@example.com', 'diana123', '4567890123', '101 Date Dr', NULL),
+('Evan', 'evan@example.com', 'evan123', '5678901234', '202 Elderberry Ln', NULL),
+('Fiona', 'fiona@example.com', 'fiona123', '6789012345', '303 Fig St', NULL),
+('George', 'george@example.com', 'george123', '7890123456', '404 Grape Rd', NULL),
+('Hannah', 'hannah@example.com', 'hannah123', '8901234567', '505 Honeydew Pl', NULL);
+
+-- Insert Sample Data for admin Table (8 rows)
+INSERT INTO admin (user_name, email, password, contact, image) VALUES 
+('Admin1', 'admin1@example.com', 'admin1pass', '1111111111', NULL),
+('Admin2', 'admin2@example.com', 'admin2pass', '2222222222', NULL),
+('Admin3', 'admin3@example.com', 'admin3pass', '3333333333', NULL),
+('Admin4', 'admin4@example.com', 'admin4pass', '4444444444', NULL),
+('Admin5', 'admin5@example.com', 'admin5pass', '5555555555', NULL),
+('Admin6', 'admin6@example.com', 'admin6pass', '6666666666', NULL),
+('Admin7', 'admin7@example.com', 'admin7pass', '7777777777', NULL),
+('Admin8', 'admin8@example.com', 'admin8pass', '8888888888', NULL);
+
+-- Insert Sample Data for delivery_agent Table (8 rows)
+INSERT INTO delivery_agent (user_name, email, password, contact, image) VALUES 
+('Agent1', 'agent1@example.com', 'agent1pass', '1111111111', NULL),
+('Agent2', 'agent2@example.com', 'agent2pass', '2222222222', NULL),
+('Agent3', 'agent3@example.com', 'agent3pass', '3333333333', NULL),
+('Agent4', 'agent4@example.com', 'agent4pass', '4444444444', NULL),
+('Agent5', 'agent5@example.com', 'agent5pass', '5555555555', NULL),
+('Agent6', 'agent6@example.com', 'agent6pass', '6666666666', NULL),
+('Agent7', 'agent7@example.com', 'agent7pass', '7777777777', NULL),
+('Agent8', 'agent8@example.com', 'agent8pass', '8888888888', NULL);
+
+-- Insert Sample Data for restaurant Table (8 rows)
+INSERT INTO restaurant (restaurant_name, user_name, email, password, contact, address, image, open_hours, close_hours) VALUES 
+('The Gourmet Kitchen', 'resto1', 'contact1@restaurant.com', 'resto1pass', '1112223333', '123 Culinary Blvd', NULL, '10:00:00', '22:00:00'),
+('Spice Hub', 'resto2', 'contact2@restaurant.com', 'resto2pass', '2223334444', '456 Flavor St', NULL, '11:00:00', '23:00:00'),
+('Burger Barn', 'resto3', 'contact3@restaurant.com', 'resto3pass', '3334445555', '789 Burger Lane', NULL, '09:00:00', '21:00:00'),
+('Pasta Palace', 'resto4', 'contact4@restaurant.com', 'resto4pass', '4445556666', '101 Pasta Rd', NULL, '12:00:00', '00:00:00'),
+('Sushi Central', 'resto5', 'contact5@restaurant.com', 'resto5pass', '5556667777', '202 Sushi St', NULL, '11:30:00', '22:30:00'),
+('Pizza Point', 'resto6', 'contact6@restaurant.com', 'resto6pass', '6667778888', '303 Pizza Ave', NULL, '10:30:00', '23:30:00'),
+('Curry Corner', 'resto7', 'contact7@restaurant.com', 'resto7pass', '7778889999', '404 Curry Blvd', NULL, '10:00:00', '22:00:00'),
+('Vegan Delight', 'resto8', 'contact8@restaurant.com', 'resto8pass', '8889990000', '505 Vegan Rd', NULL, '09:00:00', '21:00:00');
+
+-- Insert Sample Data for master_menu_items Table (8 rows)
+INSERT INTO master_menu_items (restaurant_id, item_name, item_description, price, image, item_type, available_from, available_until) VALUES 
+(1, 'Grilled Salmon', 'Fresh salmon with lemon butter', 15.99, NULL, 'Main Course', '10:00:00', '22:00:00'),
+(2, 'Chicken Tikka Masala', 'Spicy and creamy chicken curry', 12.50, NULL, 'Main Course', '11:00:00', '23:00:00'),
+(3, 'Classic Cheeseburger', 'Beef burger with cheese', 10.00, NULL, 'Main Course', '09:00:00', '21:00:00'),
+(4, 'Fettuccine Alfredo', 'Pasta in creamy alfredo sauce', 11.50, NULL, 'Main Course', '12:00:00', '00:00:00'),
+(5, 'California Roll', 'Crab and avocado sushi roll', 8.75, NULL, 'Appetizer', '11:30:00', '22:30:00'),
+(6, 'Margherita Pizza', 'Classic pizza with fresh basil', 9.99, NULL, 'Main Course', '10:30:00', '23:30:00'),
+(7, 'Vegetable Curry', 'Mixed vegetables in curry sauce', 7.99, NULL, 'Main Course', '10:00:00', '22:00:00'),
+(8, 'Vegan Salad', 'Fresh organic salad with vegan dressing', 6.50, NULL, 'Starter', '09:00:00', '20:00:00');
+
+-- Insert Sample Data for orders Table (8 rows)
+INSERT INTO orders (user_id, restaurant_id, items, quantity, total_price, order_status)
+VALUES 
+(1, 1, 'Grilled Salmon, Salad', 2, 22.99, 'completed'),
+(2, 2, 'Chicken Tikka Masala, Naan', 2, 25.00, 'completed'),
+(3, 3, 'Classic Cheeseburger, Fries', 2, 18.00, 'pending'),
+(4, 4, 'Fettuccine Alfredo, Garlic Bread', 2, 20.00, 'completed'),
+(5, 5, 'California Roll, Miso Soup', 2, 17.50, 'cancelled'),
+(6, 6, 'Margherita Pizza, Soda', 2, 19.98, 'completed'),
+(7, 7, 'Vegetable Curry, Rice', 2, 15.98, 'accepted'),
+(8, 8, 'Vegan Salad, Juice', 2, 13.00, 'completed');
+
+-- Insert Sample Data for payment Table (8 rows)
+INSERT INTO payment (order_id, payment_type, payment_status)
+VALUES
+(1, 'credit card', 'completed'),
+(2, 'paypal', 'completed'),
+(3, 'debit card', 'pending'),
+(4, 'credit card', 'completed'),
+(5, 'upi', 'failed'),
+(6, 'credit card', 'completed'),
+(7, 'paypal', 'completed'),
+(8, 'upi', 'completed');
+
+-- Insert Sample Data for bank Table (8 rows)
+INSERT INTO bank (transaction_id, total_price, order_date)
+VALUES
+(1, 22.99, NOW()),
+(2, 25.00, NOW()),
+(3, 18.00, NOW()),
+(4, 20.00, NOW()),
+(5, 17.50, NOW()),
+(6, 19.98, NOW()),
+(7, 15.98, NOW()),
+(8, 13.00, NOW());
+
+-- Insert Sample Data for delivery Table (8 rows)
+INSERT INTO delivery (order_id, delivery_status)
+VALUES
+(1, 'delivered'),
+(2, 'delivered'),
+(3, 'pending'),
+(4, 'delivered'),
+(5, 'failed'),
+(6, 'delivered'),
+(7, 'pending'),
+(8, 'delivered');
+
+-- Insert Sample Data for remarks Table (8 rows)
+INSERT INTO remarks (user_id, user_remark, remark_date)
+VALUES
+(1, 'Great service!', NOW()),
+(2, 'Food was delicious', NOW()),
+(3, 'Delivery was slow', NOW()),
+(4, 'Amazing experience', NOW()),
+(5, 'Not satisfied with the order', NOW()),
+(6, 'Will order again', NOW()),
+(7, 'Food quality improved', NOW()),
+(8, 'Delivery was on time', NOW());
+
+-- Insert Sample Data for user_favorites Table (8 rows)
+INSERT INTO user_favorites (user_id, item_name, restaurant_name)
+VALUES
+(1, 'Grilled Salmon', 'The Gourmet Kitchen'),
+(2, 'Chicken Tikka Masala', 'Spice Hub'),
+(3, 'Classic Cheeseburger', 'Burger Barn'),
+(4, 'Fettuccine Alfredo', 'Pasta Palace'),
+(5, 'California Roll', 'Sushi Central'),
+(6, 'Margherita Pizza', 'Pizza Point'),
+(7, 'Vegetable Curry', 'Curry Corner'),
+(8, 'Vegan Salad', 'Vegan Delight');
+
+-- Insert Sample Data for cart Table (8 rows)
+INSERT INTO cart (user_id, item_name, item_price, total_price)
+VALUES
+(1, 'Grilled Salmon', 15.99, 15.99),
+(2, 'Chicken Tikka Masala', 12.50, 12.50),
+(3, 'Classic Cheeseburger', 10.00, 10.00),
+(4, 'Fettuccine Alfredo', 11.50, 11.50),
+(5, 'California Roll', 8.75, 8.75),
+(6, 'Margherita Pizza', 9.99, 9.99),
+(7, 'Vegetable Curry', 7.99, 7.99),
+(8, 'Vegan Salad', 6.50, 6.50);
+
+-- Insert Sample Data for order_history Table (8 rows)
+INSERT INTO order_history (order_id, user_id)
+VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8);
+
+-- Insert Sample Data for notifications Table (8 rows)
+INSERT INTO notifications (user_id, message, time_stamp)
+VALUES
+(1, 'Your order has been delivered.', NOW()),
+(2, 'Your order is being prepared.', NOW()),
+(3, 'Your payment is pending.', NOW()),
+(4, 'Your order has been cancelled.', NOW()),
+(5, 'New offers available!', NOW()),
+(6, 'Your order is out for delivery.', NOW()),
+(7, 'Enjoy your meal!', NOW()),
+(8, 'Thank you for ordering!', NOW());
